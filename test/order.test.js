@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, renameSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, renameSync, readdirSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -11,6 +11,7 @@ import {
   replaceNameLine,
   listSkills,
   applyOrder,
+  renameSkill,
 } from '../lib/order.js'
 
 test('stemOf 去掉全部前置数字段，避免 1-2-3 叠加', () => {
@@ -119,6 +120,98 @@ test('应用中途失败时回滚到原目录和原文', () => {
     assert.equal(existsSync(join(user, '02-beta')), true)
     assert.match(readFileSync(join(user, '01-alpha', 'SKILL.md'), 'utf8'), /^name: 01-alpha$/m)
     assert.match(readFileSync(join(user, '02-beta', 'SKILL.md'), 'utf8'), /中文乙/)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+function seedSkill(parent, dirName, description) {
+  const dir = join(parent, dirName)
+  mkdirSync(dir)
+  writeFileSync(
+    join(dir, 'SKILL.md'),
+    `---\nname: ${dirName}\ndescription: "${description}"\n---\n\n正文\n`,
+    'utf8',
+  )
+  return dir
+}
+
+test('renameSkill 只换词干，编号和其它技能都不动', () => {
+  const root = mkdtempSync(join(tmpdir(), 'dso-rn-'))
+  const user = join(root, 'user')
+  mkdirSync(user)
+  const roots = [{ source: 'user', dir: user }]
+  try {
+    seedSkill(user, '12-old-name', '中文简介甲')
+    seedSkill(user, '20-keep-me', '中文简介乙')
+    const skills = listSkills(roots)
+    const target = skills.find((s) => s.dirName === '12-old-name')
+
+    const result = renameSkill(target, 'new-name')
+    assert.equal(result.ok, true)
+    assert.equal(result.changed, true)
+    assert.equal(result.from, '12-old-name')
+    assert.equal(result.to, '12-new-name')
+
+    const after = listSkills(roots)
+    assert.equal(after.length, 2)
+    const renamed = after.find((s) => s.dirName === '12-new-name')
+    assert.ok(renamed, '目录应改成 12-new-name')
+    assert.equal(renamed.name, '12-new-name', 'SKILL.md 的 name 要同步')
+    assert.equal(renamed.description, '中文简介甲', '中文简介不能被破坏')
+    assert.equal(existsSync(join(user, '12-old-name')), false)
+    assert.ok(after.find((s) => s.dirName === '20-keep-me'), '别的技能不许动')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('renameSkill 拒绝重名、中文、自带编号和空名', () => {
+  const root = mkdtempSync(join(tmpdir(), 'dso-rn2-'))
+  const user = join(root, 'user')
+  mkdirSync(user)
+  const roots = [{ source: 'user', dir: user }]
+  try {
+    seedSkill(user, '05-alpha', '甲')
+    seedSkill(user, '06-beta', '乙')
+    const skills = listSkills(roots)
+    const alpha = skills.find((s) => s.dirName === '05-alpha')
+
+    assert.throws(() => renameSkill(alpha, 'beta', undefined, skills), /已经有叫 beta 的技能了/)
+    assert.throws(() => renameSkill(alpha, '中文名'), /只能用小写英文、数字和连字符/)
+    assert.throws(() => renameSkill(alpha, '06-gamma'), /不要带数字编号/)
+    assert.throws(() => renameSkill(alpha, '   '), /名字不能为空/)
+    // 失败后磁盘必须原样
+    assert.ok(existsSync(join(user, '05-alpha')))
+    assert.equal(listSkills(roots).length, 2)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('renameSkill 目录改名失败时回滚，SKILL.md 不被改坏', () => {
+  const root = mkdtempSync(join(tmpdir(), 'dso-rn3-'))
+  const user = join(root, 'user')
+  mkdirSync(user)
+  const roots = [{ source: 'user', dir: user }]
+  try {
+    seedSkill(user, '07-src', '原文简介')
+    const skills = listSkills(roots)
+    const original = readFileSync(join(user, '07-src', 'SKILL.md'), 'utf8')
+    const io = {
+      existsSync,
+      readdirSync,
+      statSync,
+      readFileSync,
+      writeFileSync,
+      renameSync() {
+        throw new Error('boom')
+      },
+    }
+    assert.throws(() => renameSkill(skills[0], 'dst', io), /boom/)
+    assert.equal(readFileSync(join(user, '07-src', 'SKILL.md'), 'utf8'), original)
+    assert.ok(existsSync(join(user, '07-src')))
+    assert.equal(existsSync(join(user, '07-dst')), false)
   } finally {
     rmSync(root, { recursive: true, force: true })
   }

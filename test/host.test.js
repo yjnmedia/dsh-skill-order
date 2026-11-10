@@ -39,11 +39,12 @@ test('apply 只向 webServer 注册 list / stamp / apply 三条路由', () => {
 
   assert.equal(name, 'dsh-skill-order')
   assert.deepEqual(inject, ['webServer'])
-  assert.equal(registered.length, 3)
+  assert.equal(registered.length, 4)
   assert.equal(registered[0].kind, 'exact')
   assert.equal(registered[0].path, '/api/dsh-skill-order/list')
   assert.equal(registered[1].path, '/api/dsh-skill-order/stamp')
   assert.equal(registered[2].path, '/api/dsh-skill-order/apply')
+  assert.equal(registered[3].path, '/api/dsh-skill-order/rename')
 
   const res = mockRes()
   registered[0].handler({ method: 'GET', socket: { remoteAddress: '127.0.0.1' } }, res)

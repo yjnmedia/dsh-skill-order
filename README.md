@@ -33,6 +33,7 @@ New-Item -ItemType Junction -Path $link -Target 'E:\000Dev\TuoZiWorkbench\Yichaj
 | GET | `/api/dsh-skill-order/list` | 返回 `{ ok, skills, count, stamp }` |
 | GET | `/api/dsh-skill-order/stamp` | 返回 `{ ok, stamp }`，客户端每 2 秒比对一次 |
 | POST | `/api/dsh-skill-order/apply` | 请求体 `{ order: [id, ...] }`，按顺序改名 |
+| POST | `/api/dsh-skill-order/rename` | 请求体 `{ source, dirName, stem }`，只换词干，位置编号不动 |
 
 只接受本机访问。宿主侧用 `ctx.webServer.register({ kind: 'exact' })` 挂载 —— **不能只挂 connection.fetch**，那条通道在端点未注册时返回纯文本 `not found`，前端 `JSON.parse` 会直接报错。
 
@@ -50,7 +51,7 @@ New-Item -ItemType Junction -Path $link -Target 'E:\000Dev\TuoZiWorkbench\Yichaj
 node --test test/*.test.js
 ```
 
-Node 26 下写 `node --test test/` 会报 `MODULE_NOT_FOUND`，必须带 `*.test.js` 通配。当前 12 个用例全过。
+Node 26 下写 `node --test test/` 会报 `MODULE_NOT_FOUND`，必须带 `*.test.js` 通配。当前 19 个用例全过。
 
 ## 已知约束
 
