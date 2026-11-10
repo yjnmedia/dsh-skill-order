@@ -1,0 +1,4 @@
+# dsh-skill-order bundle patch：挂到当前 profile 的插件名单。
+- insert:
+    - id: dsh-skill-order
+      name: dsh-skill-order
