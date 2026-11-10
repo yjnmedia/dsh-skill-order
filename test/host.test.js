@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
-import { apply, inject, name } from '../lib/index.js'
+import { apply, inject, name, refreshSkillCatalog } from '../lib/index.js'
 
 function mockRes() {
   return {
@@ -62,4 +62,57 @@ test('apply 只向 webServer 注册 list / stamp / apply 三条路由', () => {
   assert.equal(stampData.stamp, data.stamp, '两次取指纹必须一致')
   // apply 执行成功会写就绪日志，是「插件真的挂上」的可查证据
   assert.equal(existsSync(join(homedir(), '.dsh', 'dsh-skill-order-ready.log')), true)
+})
+
+test('改名后让宿主技能缓存失效，斜杠菜单不用重启', () => {
+  let invalidated = 0
+  const events = []
+  const steps = refreshSkillCatalog({
+    skills: {
+      invalidateCache() {
+        invalidated += 1
+      },
+    },
+    emit(event) {
+      events.push(event)
+    },
+  })
+  assert.equal(invalidated, 1, '必须调用 skillService.invalidateCache()')
+  assert.ok(events.includes('commands/change'), '还要通知命令面板')
+  assert.deepEqual(steps, ['skills.invalidateCache', 'commands/change'])
+})
+
+test('宿主没挂 skills 服务时不抛错，只记 unavailable', () => {
+  const events = []
+  const steps = refreshSkillCatalog({
+    emit(event) {
+      events.push(event)
+    },
+  })
+  assert.deepEqual(steps, ['skills.unavailable', 'commands/change'])
+  assert.ok(events.includes('commands/change'))
+})
+
+test('ctx.skills 拿不到时退回 ctx.get("skills")', () => {
+  let invalidated = 0
+  const steps = refreshSkillCatalog({
+    get(key) {
+      return key === 'skills' ? { invalidateCache: () => (invalidated += 1) } : undefined
+    },
+    emit() {},
+  })
+  assert.equal(invalidated, 1)
+  assert.equal(steps[0], 'skills.invalidateCache')
+})
+
+test('invalidateCache 抛错时不中断，改名结果照常返回', () => {
+  const steps = refreshSkillCatalog({
+    skills: {
+      invalidateCache() {
+        throw new Error('boom')
+      },
+    },
+    emit() {},
+  })
+  assert.match(steps[0], /^skills\.invalidateCache failed: boom$/)
 })
