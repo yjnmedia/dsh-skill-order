@@ -80,7 +80,8 @@ test('改名后让宿主技能缓存失效，斜杠菜单不用重启', () => {
   })
   assert.equal(invalidated, 1, '必须调用 skillService.invalidateCache()')
   assert.ok(events.includes('commands/change'), '还要通知命令面板')
-  assert.deepEqual(steps, ['skills.invalidateCache', 'commands/change'])
+  assert.equal(steps[0], 'skills.invalidateCache')
+  assert.equal(steps[1], 'commands/change')
 })
 
 test('宿主没挂 skills 服务时不抛错，只记 unavailable', () => {
@@ -90,8 +91,9 @@ test('宿主没挂 skills 服务时不抛错，只记 unavailable', () => {
       events.push(event)
     },
   })
-  assert.deepEqual(steps, ['skills.unavailable', 'commands/change'])
-  assert.ok(events.includes('commands/change'))
+  assert.equal(steps[0], 'skills.unavailable')
+  assert.ok(steps.includes('commands/change'))
+  assert.ok(steps.some((s) => s.startsWith('agent-preset/selected')), '没有会话也要给出这一步')
 })
 
 test('ctx.skills 拿不到时退回 ctx.get("skills")', () => {
@@ -116,4 +118,31 @@ test('invalidateCache 抛错时不中断，改名结果照常返回', () => {
     emit() {},
   })
   assert.match(steps[0], /^skills\.invalidateCache failed: boom$/)
+})
+
+test('有会话时逐个广播 agent-preset/selected，界面才会重取技能目录', () => {
+  const events = []
+  const steps = refreshSkillCatalog({
+    skills: { invalidateCache() {} },
+    get(key) {
+      if (key !== 'sessions') return undefined
+      return {
+        list: () => [
+          { id: 'sess-a', header: { agentPreset: 'default' } },
+          { id: 'sess-b', header: { agentPreset: 'writer' } },
+          { header: { agentPreset: 'no-id-so-skip' } },
+          { id: 'sess-c', header: {} },
+        ],
+      }
+    },
+    emit(event, ...args) {
+      events.push([event, ...args])
+    },
+  })
+  const preset = events.filter((e) => e[0] === 'agent-preset/selected')
+  assert.equal(preset.length, 2, '只对带 id 和预设的会话广播')
+  assert.deepEqual(preset[0], ['agent-preset/selected', 'sess-a', 'default'])
+  assert.deepEqual(preset[1], ['agent-preset/selected', 'sess-b', 'writer'])
+  assert.ok(events.some((e) => e[0] === 'commands/change'))
+  assert.ok(steps.includes('agent-preset/selected x2'))
 })

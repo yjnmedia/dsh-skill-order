@@ -51,7 +51,7 @@ New-Item -ItemType Junction -Path $link -Target 'E:\000Dev\TuoZiWorkbench\Yichaj
 node --test test/*.test.js
 ```
 
-Node 26 下写 `node --test test/` 会报 `MODULE_NOT_FOUND`，必须带 `*.test.js` 通配。当前 19 个用例全过。
+Node 26 下写 `node --test test/` 会报 `MODULE_NOT_FOUND`，必须带 `*.test.js` 通配。当前 20 个用例全过。
 
 ## 已知约束
 
