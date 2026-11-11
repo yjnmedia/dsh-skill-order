@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
-import { apply, inject, name, refreshSkillCatalog } from '../lib/index.js'
+import { apply, createSkillWatcher, inject, name, refreshSkillCatalog } from '../lib/index.js'
 
 function mockRes() {
   return {
@@ -128,6 +128,73 @@ test('invalidateCache 抛错时不中断，改名结果照常返回', () => {
     emit() {},
   })
   assert.match(steps[0], /^skills\.invalidateCache failed: boom$/)
+})
+
+test('后台盯目录：第一次只记基线，指纹没变不吵宿主', () => {
+  let stamp = 'a'
+  let refreshed = 0
+  const watcher = createSkillWatcher({}, {
+    everyMs: 0,
+    stampOf: () => stamp,
+    refresh: () => {
+      refreshed += 1
+    },
+  })
+  assert.equal(watcher.tick(), false, '第一次只记基线')
+  assert.equal(watcher.tick(), false, '没变化不该刷新')
+  assert.equal(refreshed, 0)
+})
+
+test('后台盯目录：技能目录一变就让宿主丢缓存', () => {
+  let stamp = 'a'
+  const refreshed = []
+  const watcher = createSkillWatcher({}, {
+    everyMs: 0,
+    stampOf: () => stamp,
+    refresh: () => refreshed.push(stamp),
+  })
+  watcher.tick()
+  stamp = 'b'
+  assert.equal(watcher.tick(), true, '变化后应刷新一次')
+  assert.deepEqual(refreshed, ['b'])
+  assert.equal(watcher.tick(), false, '同一指纹不重复刷新')
+  stamp = 'c'
+  assert.equal(watcher.tick(), true)
+  assert.deepEqual(refreshed, ['b', 'c'])
+})
+
+test('后台盯目录：目录读不到时不刷新也不崩', () => {
+  let boom = false
+  let refreshed = 0
+  const watcher = createSkillWatcher({}, {
+    everyMs: 0,
+    stampOf: () => {
+      if (boom) throw new Error('ENOENT')
+      return 'a'
+    },
+    refresh: () => {
+      refreshed += 1
+    },
+  })
+  watcher.tick()
+  boom = true
+  assert.equal(watcher.tick(), false)
+  assert.equal(refreshed, 0)
+})
+
+test('后台盯目录：start/stop 幂等，stop 后不再轮询', () => {
+  let stamps = 0
+  const watcher = createSkillWatcher({}, {
+    everyMs: 60000,
+    stampOf: () => 'stamp-' + ++stamps,
+    refresh: () => {},
+  })
+  watcher.start()
+  watcher.start()
+  watcher.stop()
+  const after = stamps
+  watcher.stop()
+  assert.equal(stamps, after, 'stop 之后不应再有定时回调')
 })
 
 test('有会话时逐个广播 agent-preset/selected，界面才会重取技能目录', () => {

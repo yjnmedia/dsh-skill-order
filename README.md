@@ -1,6 +1,6 @@
 # dsh-skill-order
 
-DSH 设置页里的「技能排序」插件，当前版本 **1.0.8**。
+DSH 设置页里的「技能排序」插件，当前版本 **1.0.9**。
 
 拖拽调整顺序、点行末的 ↑ 一键置顶，点「应用」后同步改技能文件夹名和 `SKILL.md` 里的 `name`。斜杠菜单按 `name` 的码点排序，宿主没有单独的排序配置。
 
@@ -35,6 +35,8 @@ New-Item -ItemType Junction -Path $link -Target 'E:\000Dev\TuoZiWorkbench\Yichaj
 | POST | `/api/dsh-skill-order/apply` | 请求体 `{ order: [id, ...] }`，按顺序改名 |
 | POST | `/api/dsh-skill-order/refresh` | 让宿主丢掉技能缓存并通知界面重取，点「刷新」时调用 |
 | POST | `/api/dsh-skill-order/rename` | 请求体 `{ source, dirName, stem }`，只换词干，位置编号不动 |
+
+后台还有一个不对外暴露的轮询：每 2 秒比一次技能目录指纹（`createSkillWatcher`），发现变化就让宿主丢掉技能缓存。它是替别的不发通知的工具补位 —— 例如技能中心 `@linxin666/dsh-client-ui-skill-explorer` 读写同一批目录，但全包没有 `emit` / `invalidateCache`，它改完技能，斜杠菜单靠这里才活得过来。只通知宿主，不重拉列表、不动正在拖的顺序。
 
 只接受本机访问。宿主侧用 `ctx.webServer.register({ kind: 'exact' })` 挂载 —— **不能只挂 connection.fetch**，那条通道在端点未注册时返回纯文本 `not found`，前端 `JSON.parse` 会直接报错。
 
