@@ -26,6 +26,19 @@ if (Test-Path -LiteralPath $link) { (Get-Item -LiteralPath $link -Force).Delete(
 New-Item -ItemType Junction -Path $link -Target 'E:\000Dev\TuoZiWorkbench\Yichajian\dsh-skill-order'
 ```
 
+## 自动规范新技能（1.0.12）
+
+后台每 2 秒比一次技能目录指纹。发现新技能时（不管是谁放进来的）：
+
+- 名字不合「两位编号-英文词干」的，自动补编号并清洗词干：去掉 `mem-skill-` 前缀与尾部哈希，非法字符转连字符；已经合规的不动。
+- 简介超过 20 个汉字（显示宽度 40）的，调用一次模型改写到 20 字以内；模型给不出合格结果时保留原文并记账，不硬截断。
+- 处理结果写进 `%USERPROFILE%\.dsh\dsh-skill-order.json` 的 `knownSkills` 快照，重启后不会重复处理同一批。
+- 设置页顶部显示「发现 N 个新技能」，并按名字把它们排到最前；顺序只存在页面里，点「应用」才改磁盘。
+
+同一配置文件里有两个开关：`autoPopup` 管提示条，`autoPinNew` 管自动排到最前。
+
+宿主没有公开接口能让插件主动打开设置页（60 个客户端包里都没有），所以这条提示只在用户打开「设置 → 技能排序」时出现。
+
 ## 接口
 
 | 方法 | 路径 | 说明 |

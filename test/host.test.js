@@ -38,14 +38,16 @@ test('apply 只向 webServer 注册 list / stamp / apply 三条路由', () => {
   apply(ctx)
 
   assert.equal(name, 'dsh-skill-order')
-  assert.deepEqual(inject, ['webServer'])
-  assert.equal(registered.length, 5)
+  assert.deepEqual(inject, ['webServer', 'llm'])
+  assert.equal(registered.length, 7)
   assert.equal(registered[0].kind, 'exact')
   assert.equal(registered[0].path, '/api/dsh-skill-order/list')
   assert.equal(registered[1].path, '/api/dsh-skill-order/stamp')
   assert.equal(registered[2].path, '/api/dsh-skill-order/refresh')
-  assert.equal(registered[3].path, '/api/dsh-skill-order/apply')
-  assert.equal(registered[4].path, '/api/dsh-skill-order/rename')
+  assert.equal(registered[3].path, '/api/dsh-skill-order/settings')
+  assert.equal(registered[4].path, '/api/dsh-skill-order/fresh')
+  assert.equal(registered[5].path, '/api/dsh-skill-order/apply')
+  assert.equal(registered[6].path, '/api/dsh-skill-order/rename')
 
   const res = mockRes()
   registered[0].handler({ method: 'GET', socket: { remoteAddress: '127.0.0.1' } }, res)
@@ -130,7 +132,7 @@ test('invalidateCache 抛错时不中断，改名结果照常返回', () => {
   assert.match(steps[0], /^skills\.invalidateCache failed: boom$/)
 })
 
-test('后台盯目录：第一次只记基线，指纹没变不吵宿主', () => {
+test('后台盯目录：第一次只记基线，指纹没变不吵宿主', async () => {
   let stamp = 'a'
   let refreshed = 0
   const watcher = createSkillWatcher({}, {
@@ -140,12 +142,12 @@ test('后台盯目录：第一次只记基线，指纹没变不吵宿主', () =>
       refreshed += 1
     },
   })
-  assert.equal(watcher.tick(), false, '第一次只记基线')
-  assert.equal(watcher.tick(), false, '没变化不该刷新')
+  assert.equal(await watcher.tick(), false, '第一次只记基线')
+  assert.equal(await watcher.tick(), false, '没变化不该刷新')
   assert.equal(refreshed, 0)
 })
 
-test('后台盯目录：技能目录一变就让宿主丢缓存', () => {
+test('后台盯目录：技能目录一变就让宿主丢缓存', async () => {
   let stamp = 'a'
   const refreshed = []
   const watcher = createSkillWatcher({}, {
@@ -153,17 +155,17 @@ test('后台盯目录：技能目录一变就让宿主丢缓存', () => {
     stampOf: () => stamp,
     refresh: () => refreshed.push(stamp),
   })
-  watcher.tick()
+  await watcher.tick()
   stamp = 'b'
-  assert.equal(watcher.tick(), true, '变化后应刷新一次')
+  assert.equal(await watcher.tick(), true, '变化后应刷新一次')
   assert.deepEqual(refreshed, ['b'])
-  assert.equal(watcher.tick(), false, '同一指纹不重复刷新')
+  assert.equal(await watcher.tick(), false, '同一指纹不重复刷新')
   stamp = 'c'
-  assert.equal(watcher.tick(), true)
+  assert.equal(await watcher.tick(), true)
   assert.deepEqual(refreshed, ['b', 'c'])
 })
 
-test('后台盯目录：目录读不到时不刷新也不崩', () => {
+test('后台盯目录：目录读不到时不刷新也不崩', async () => {
   let boom = false
   let refreshed = 0
   const watcher = createSkillWatcher({}, {
@@ -176,13 +178,30 @@ test('后台盯目录：目录读不到时不刷新也不崩', () => {
       refreshed += 1
     },
   })
-  watcher.tick()
+  await watcher.tick()
   boom = true
-  assert.equal(watcher.tick(), false)
+  assert.equal(await watcher.tick(), false)
   assert.equal(refreshed, 0)
 })
 
-test('后台盯目录：start/stop 幂等，stop 后不再轮询', () => {
+test('后台盯目录：变化后顺带调一次新技能规范化', async () => {
+  let stamp = 'a'
+  let adopted = 0
+  const watcher = createSkillWatcher({}, {
+    everyMs: 0,
+    stampOf: () => stamp,
+    refresh: () => {},
+    adopt: async () => {
+      adopted += 1
+    },
+  })
+  await watcher.tick()
+  stamp = 'b'
+  await watcher.tick()
+  assert.equal(adopted, 1)
+})
+
+test('后台盯目录：start/stop 幂等，stop 后不再轮询', async () => {
   let stamps = 0
   const watcher = createSkillWatcher({}, {
     everyMs: 60000,
