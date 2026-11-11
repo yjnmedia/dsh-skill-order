@@ -1,0 +1,85 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Yichajian DSH Plugins",
+    "zh": "易插件"
+  },
+  "description": {
+    "en": "Plugins for DeepSeek Harness, maintained by yjnmedia.",
+    "zh": "yjnmedia 维护的 DeepSeek Harness 插件集合。"
+  },
+  "metadata": {
+    "categories": {
+      "skills": {
+        "title": {
+          "en": "Skills",
+          "zh": "技能"
+        }
+      }
+    },
+    "labels": {
+      "order": {
+        "title": {
+          "en": "Ordering",
+          "zh": "排序"
+        }
+      },
+      "live-reload": {
+        "title": {
+          "en": "Live reload",
+          "zh": "免重启"
+        }
+      }
+    },
+    "sortKeys": {}
+  },
+  "plugins": [
+    {
+      "name": "dsh-skill-order",
+      "title": {
+        "en": "Skill Order",
+        "zh": "技能排序"
+      },
+      "description": {
+        "en": "Drag skills into the order you want; applying it renames the directories and SKILL.md so the slash menu follows. Also refreshes the host skill cache so the slash menu updates without restarting DSH.",
+        "zh": "在设置页拖拽调整技能顺序，应用后同步改写目录名与 SKILL.md 的 name，斜杠菜单按你的顺序排。还会通知宿主刷新技能缓存，改完不用重启 DSH。"
+      },
+      "author": "yjnmedia",
+      "homepage": "https://github.com/yjnmedia/dsh-skill-order#readme",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/yjnmedia/dsh-skill-order"
+      },
+      "metadata": {
+        "category": "skills",
+        "keywords": [
+          "dsh",
+          "dsh-plugin",
+          "skills",
+          "sort",
+          "order",
+          "slash-menu"
+        ],
+        "labels": [
+          "order",
+          "live-reload"
+        ],
+        "sortKeys": {}
+      },
+      "versions": [
+        {
+          "version": "1.0.9",
+          "publishTimestamp": 1794426846,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/yjnmedia/dsh-skill-order",
+            "commit": "549d8129874f4e1e6c4f1d9ce69dfabe8e1c146e"
+          },
+          "engines": {
+            "dsh": ">=0.2.2-rc.1"
+          }
+        }
+      ]
+    }
+  ]
+}
