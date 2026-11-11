@@ -39,12 +39,13 @@ test('apply 只向 webServer 注册 list / stamp / apply 三条路由', () => {
 
   assert.equal(name, 'dsh-skill-order')
   assert.deepEqual(inject, ['webServer'])
-  assert.equal(registered.length, 4)
+  assert.equal(registered.length, 5)
   assert.equal(registered[0].kind, 'exact')
   assert.equal(registered[0].path, '/api/dsh-skill-order/list')
   assert.equal(registered[1].path, '/api/dsh-skill-order/stamp')
-  assert.equal(registered[2].path, '/api/dsh-skill-order/apply')
-  assert.equal(registered[3].path, '/api/dsh-skill-order/rename')
+  assert.equal(registered[2].path, '/api/dsh-skill-order/refresh')
+  assert.equal(registered[3].path, '/api/dsh-skill-order/apply')
+  assert.equal(registered[4].path, '/api/dsh-skill-order/rename')
 
   const res = mockRes()
   registered[0].handler({ method: 'GET', socket: { remoteAddress: '127.0.0.1' } }, res)
@@ -61,6 +62,15 @@ test('apply 只向 webServer 注册 list / stamp / apply 三条路由', () => {
   const stampData = JSON.parse(Buffer.from(stampRes.body).toString('utf8'))
   assert.equal(stampData.ok, true)
   assert.equal(stampData.stamp, data.stamp, '两次取指纹必须一致')
+
+  // 点「刷新」时也要让宿主丢掉技能缓存，斜杠菜单才会重取
+  const refreshRes = mockRes()
+  registered[2].handler({ method: 'POST', socket: { remoteAddress: '127.0.0.1' } }, refreshRes)
+  assert.equal(refreshRes.status, 200)
+  const refreshData = JSON.parse(Buffer.from(refreshRes.body).toString('utf8'))
+  assert.equal(refreshData.ok, true)
+  assert.ok(Array.isArray(refreshData.refresh), '必须返回刷新步骤')
+  assert.ok(refreshData.refresh.length >= 1)
   // apply 执行成功会写就绪日志，是「插件真的挂上」的可查证据
   assert.equal(existsSync(join(homedir(), '.dsh', 'dsh-skill-order-ready.log')), true)
 })
