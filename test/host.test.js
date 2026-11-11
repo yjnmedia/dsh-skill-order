@@ -35,7 +35,7 @@ test('apply 只向 webServer 注册 list / stamp / apply 三条路由', () => {
     emit() {},
   }
 
-  apply(ctx)
+  apply(ctx, { adoptAtStart: false })
 
   assert.equal(name, 'dsh-skill-order')
   assert.deepEqual(inject, ['webServer', 'llm'])
