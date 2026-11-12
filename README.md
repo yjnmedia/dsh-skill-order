@@ -5,6 +5,10 @@
 </p>
 
 <p align="center">
+  <img src="assets/hero.png" alt="技能排序面板" width="520">
+</p>
+
+<p align="center">
   <a href="https://github.com/yjnmedia/dsh-skill-order/releases"><img alt="version" src="https://img.shields.io/github/package-json/v/yjnmedia/dsh-skill-order?label=version&color=4D6BFE"></a>
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-2EA44F"></a>
   <img alt="dsh" src="https://img.shields.io/badge/DSH-%E2%89%A5%200.2.2--rc.1-6E6E6E">
