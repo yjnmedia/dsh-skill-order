@@ -85,7 +85,7 @@ test('第一次运行只记快照，不把已有技能当新技能', async () =>
     const roots = [{ source: 'user', dir: root }]
     const result = await adoptFreshSkills(mockCtx('短'), { home, roots })
     assert.equal(result.fresh, 0)
-    assert.deepEqual(readSettings(home).knownSkills, ['user:01-alpha'])
+    assert.deepEqual(readSettings(home).knownSkills, ['user:alpha'], '身份是词干，不带编号')
     assert.equal(existsSync(join(root, '01-alpha')), true, '不该动已有技能')
   } finally {
     rmSync(home, { recursive: true, force: true })
@@ -119,7 +119,7 @@ test('新技能自动补编号、清词干、改写超长简介', async () => {
       skills.map((s) => s.name),
       ['01-alpha', '02-dev'],
     )
-    assert.deepEqual(readSettings(home).knownSkills.sort(), ['user:01-alpha', 'user:02-dev'])
+    assert.deepEqual(readSettings(home).knownSkills.sort(), ['user:alpha', 'user:dev'])
   } finally {
     rmSync(home, { recursive: true, force: true })
     rmSync(root, { recursive: true, force: true })

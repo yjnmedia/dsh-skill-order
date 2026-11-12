@@ -38,7 +38,9 @@ test('把最后一条置顶后应用：它变成 01，其余按原顺序顺延',
 
     const result = applyOrder(cloned, order)
     assert.equal(result.ok, true)
-    assert.equal(result.renamed.length, total)
+    assert.ok(result.renamed.length > 0, '至少要有一条改名')
+    // 编号可能有空洞（磁盘上 14 后面直接是 16），那时后面的技能位置不动，
+    // 所以不能断言「全部都要改名」，只能断言最终顺序对。
 
     const after = listSkills(roots)
     assert.equal(after.length, total)

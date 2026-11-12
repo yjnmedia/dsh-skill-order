@@ -7,7 +7,9 @@ import {
   DEFAULT_SETTINGS,
   pickPendingSkills,
   readSettings,
+  renameKeys,
   settingsPath,
+  skillKey,
   writeSettings,
 } from '../lib/config.js'
 import { adoptFreshSkills, clearPendingNew } from '../lib/index.js'
@@ -33,7 +35,7 @@ test('配置默认带 pendingNew，写出后还能读回来', () => {
   try {
     assert.deepEqual(readSettings(home).pendingNew, [])
     writeSettings(home, { ...DEFAULT_SETTINGS, pendingNew: ['user:02-alpha', '', 3] })
-    assert.deepEqual(readSettings(home).pendingNew, ['user:02-alpha'], '只留非空字符串')
+    assert.deepEqual(readSettings(home).pendingNew, ['user:alpha'], '只留非空字符串，并去掉编号')
     assert.equal(existsSync(settingsPath(home)), true)
   } finally {
     rmSync(home, { recursive: true, force: true })
@@ -57,7 +59,7 @@ test('自动收进来的新技能记进 pendingNew，重载不丢', async () => 
   try {
     seedSkill(root, '01-alpha', '甲')
     // 先建快照，再放一个「新技能」进来
-    writeSettings(home, { ...DEFAULT_SETTINGS, knownSkills: listSkills(roots).map((s) => s.id) })
+    writeSettings(home, { ...DEFAULT_SETTINGS, knownSkills: listSkills(roots).map((s) => skillKey(s)) })
     seedSkill(root, 'zzz-beta', '乙')
 
     const result = await adoptFreshSkills(null, { home, roots })
@@ -66,7 +68,7 @@ test('自动收进来的新技能记进 pendingNew，重载不丢', async () => 
 
     const after = readSettings(home)
     assert.equal(after.pendingNew.length, 1, '新技能要记进待确认名单')
-    assert.match(after.pendingNew[0], /^user:02-zzz-beta$/, '记的是规范后的 id，实际 ' + after.pendingNew[0])
+    assert.match(after.pendingNew[0], /^user:zzz-beta$/, '记的是词干身份，实际 ' + after.pendingNew[0])
     assert.equal(listSkills(roots).length, 2)
   } finally {
     rmSync(home, { recursive: true, force: true })
