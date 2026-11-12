@@ -1,6 +1,6 @@
 {
   "name": "dsh-skill-order",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "DSH 技能管家：拖拽排序、一键置顶、行内改名，新技能自动补编号并改写过长简介，改完斜杠菜单立刻跟着变。",
   "type": "module",
   "license": "MIT",
