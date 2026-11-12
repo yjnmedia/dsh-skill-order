@@ -51,7 +51,7 @@ New-Item -ItemType Junction -Path $link -Target 'E:\000Dev\TuoZiWorkbench\Yichaj
 - 点「应用」成功后才清空；不点就一直待在最前。
 - 刷新页面、重载插件、重启软件都保持。
 
-## 刷新顺带重载（1.0.13）
+## 刷新顺带重载（1.0.13 起，1.0.15 修好）
 
 点「刷新」时，先比一次插件自己那几个源码文件的指纹（`package.json` 与 `lib/*.js` 的 mtime + size）。只有比出来不一致——也就是磁盘上已经换了一版、而进程里跑的还是旧的——才会在响应发出去之后调一次 `pluginManager.reload()`，让宿主重新组合 profile。平时点刷新跟以前一样，不会重载。
 
