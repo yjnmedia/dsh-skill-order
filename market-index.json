@@ -41,8 +41,8 @@
         "zh": "技能排序"
       },
       "description": {
-        "en": "Drag skills into the order you want; applying it renames the directories and SKILL.md so the slash menu follows. Also refreshes the host skill cache so the slash menu updates without restarting DSH.",
-        "zh": "在设置页拖拽调整技能顺序，应用后同步改写目录名与 SKILL.md 的 name，斜杠菜单按你的顺序排。还会通知宿主刷新技能缓存，改完不用重启 DSH。"
+        "en": "Your skill butler for DSH. Drag to reorder, pin a skill to the top, rename it inline. New skills are numbered, cleaned up and have over-long descriptions rewritten automatically. Every change is pushed to the slash menu at once, so no restart is needed.",
+        "zh": "DSH 的技能管家：拖拽排序、一键置顶、行内改名；新技能自动补编号、洗净名字、把过长简介改到 20 字内；改完通知宿主刷新技能缓存，斜杠菜单当场跟着变，不用重启。"
       },
       "author": "yjnmedia",
       "homepage": "https://github.com/yjnmedia/dsh-skill-order#readme",
