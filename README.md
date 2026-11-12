@@ -39,6 +39,15 @@ New-Item -ItemType Junction -Path $link -Target 'E:\000Dev\TuoZiWorkbench\Yichaj
 
 宿主没有公开接口能让插件主动打开设置页（60 个客户端包里都没有），所以这条提示只在用户打开「设置 → 技能排序」时出现。
 
+## 刷新顺带重载（1.0.13）
+
+点「刷新」时，先比一次插件自己那几个源码文件的指纹（`package.json` 与 `lib/*.js` 的 mtime + size）。只有比出来不一致——也就是磁盘上已经换了一版、而进程里跑的还是旧的——才会在响应发出去之后调一次 `pluginManager.reload()`，让宿主重新组合 profile。平时点刷新跟以前一样，不会重载。
+
+- 不会在后台轮询：重载会把整个 profile 短暂重挂，不能随手触发。
+- 响应先发、重载后做，否则请求会被自己切断。
+- 宿主没挂 `pluginManager` 时返回 `reload: "unavailable"`，界面照常提示，只是要等下次重启。
+- 只换后端代码；界面部分（`lib/client.js`）仍需按 F5 刷新窗口。
+
 ## 接口
 
 | 方法 | 路径 | 说明 |
@@ -46,7 +55,7 @@ New-Item -ItemType Junction -Path $link -Target 'E:\000Dev\TuoZiWorkbench\Yichaj
 | GET | `/api/dsh-skill-order/list` | 返回 `{ ok, skills, count, stamp }` |
 | GET | `/api/dsh-skill-order/stamp` | 返回 `{ ok, stamp }`，客户端每 2 秒比对一次 |
 | POST | `/api/dsh-skill-order/apply` | 请求体 `{ order: [id, ...] }`，按顺序改名 |
-| POST | `/api/dsh-skill-order/refresh` | 让宿主丢掉技能缓存并通知界面重取，点「刷新」时调用 |
+| POST | `/api/dsh-skill-order/refresh` | 让宿主丢掉技能缓存并通知界面重取；插件代码有变化时顺带重载，返回 `{ ok, refresh, reload }` |
 | POST | `/api/dsh-skill-order/rename` | 请求体 `{ source, dirName, stem }`，只换词干，位置编号不动 |
 
 后台还有一个不对外暴露的轮询：每 2 秒比一次技能目录指纹（`createSkillWatcher`），发现变化就让宿主丢掉技能缓存。它是替别的不发通知的工具补位 —— 例如技能中心 `@linxin666/dsh-client-ui-skill-explorer` 读写同一批目录，但全包没有 `emit` / `invalidateCache`，它改完技能，斜杠菜单靠这里才活得过来。只通知宿主，不重拉列表、不动正在拖的顺序。
