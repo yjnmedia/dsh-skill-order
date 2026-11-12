@@ -44,3 +44,33 @@ test('reload 抛错不往上冒', () => {
   }
   assert.doesNotThrow(() => schedulePluginReload(ctx, { timer: (fn) => fn() }))
 })
+
+test('有 hmr 时必须包在 runExclusive 里调 reload，否则宿主直接抛错', () => {
+  let wrapped = 0
+  let reloaded = 0
+  const ctx = {
+    get(name) {
+      if (name === 'pluginManager') {
+        return {
+          reload() {
+            reloaded += 1
+            return Promise.resolve({ warnings: [] })
+          },
+        }
+      }
+      if (name === 'hmr') {
+        return {
+          runExclusive(operation) {
+            wrapped += 1
+            return Promise.resolve(operation())
+          },
+        }
+      }
+      return undefined
+    },
+  }
+  const state = schedulePluginReload(ctx, { timer: (fn) => fn() })
+  assert.equal(state, 'pending')
+  assert.equal(wrapped, 1, '必须经由 hmr.runExclusive')
+  assert.equal(reloaded, 1, '里面要真的调一次 reload')
+})
