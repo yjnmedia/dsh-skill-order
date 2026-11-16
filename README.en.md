@@ -1,5 +1,14 @@
 <h1 align="center">dsh-skill-order</h1>
 
+<p align="center"><a href="README.md">中文</a></p>
+
+<p align="center">
+  <a href="#install">Install</a> ·
+  <a href="#why">Why</a> ·
+  <a href="#what-it-does">What it does</a> ·
+  <a href="docs/DEVELOPMENT.md">Development</a>
+</p>
+
 <p align="center">
   <b>The skill keeper for DSH: order, rename, tidy up — applied instantly.</b>
 </p>
@@ -12,14 +21,6 @@
   <a href="https://github.com/yjnmedia/dsh-skill-order/releases"><img alt="version" src="https://img.shields.io/github/package-json/v/yjnmedia/dsh-skill-order?label=version&color=4D6BFE"></a>
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-2EA44F"></a>
   <img alt="dsh" src="https://img.shields.io/badge/DSH-%E2%89%A5%200.2.2--rc.1-6E6E6E">
-</p>
-
-<p align="center">
-  <a href="#install">Install</a> ·
-  <a href="#why">Why</a> ·
-  <a href="#what-it-does">What it does</a> ·
-  <a href="docs/DEVELOPMENT.md">Development</a> ·
-  <a href="README.md">中文</a>
 </p>
 
 ## Install

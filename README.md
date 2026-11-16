@@ -1,5 +1,14 @@
 <h1 align="center">dsh-skill-order</h1>
 
+<p align="center"><a href="README.en.md">English</a></p>
+
+<p align="center">
+  <a href="#装">装</a> ·
+  <a href="#为什么需要它">为什么需要它</a> ·
+  <a href="#能做什么">能做什么</a> ·
+  <a href="docs/DEVELOPMENT.md">开发</a>
+</p>
+
 <p align="center">
   <b>DSH 的技能管家：排序、改名、自动规范，改完立刻生效。</b>
 </p>
@@ -13,14 +22,6 @@
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-2EA44F"></a>
   <img alt="dsh" src="https://img.shields.io/badge/DSH-%E2%89%A5%200.2.2--rc.1-6E6E6E">
   <img alt="skills" src="https://img.shields.io/badge/skills-%E4%BB%85%E6%9C%AC%E6%9C%BA-8A8A8A">
-</p>
-
-<p align="center">
-  <a href="#装">装</a> ·
-  <a href="#为什么需要它">为什么需要它</a> ·
-  <a href="#能做什么">能做什么</a> ·
-  <a href="docs/DEVELOPMENT.md">开发</a> ·
-  <a href="README.en.md">English</a>
 </p>
 
 ## 装
