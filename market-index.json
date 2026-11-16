@@ -68,6 +68,18 @@
       },
       "versions": [
         {
+          "version": "1.0.19",
+          "publishTimestamp": 1794819616,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/yjnmedia/dsh-skill-order.git",
+            "commit": "d6ecb1724b9ceaa5d1269db7b42be0966ee4deb4"
+          },
+          "engines": {
+            "dsh": ">=0.2.2-rc.1"
+          }
+        },
+        {
           "version": "1.0.18",
           "publishTimestamp": 1794556591,
           "source": {
