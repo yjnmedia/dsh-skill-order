@@ -1,4 +1,4 @@
-// 客户端渲染冒烟：用假 React 把技能排序面板真渲染一遍，中英各一次。
+// 客户端渲染冒烟：用假 React 把技能控制面板真渲染一遍，中英各一次。
 // 只读、不联网、不启动服务。运行：node scripts/render-smoke.mjs
 import fs from 'node:fs'
 import path from 'node:path'
@@ -151,17 +151,17 @@ const text = collected.join(' ')
 
 if (failures.length === 0) {
   if (EN) {
-    if (!text.includes('Skill order')) failures.push('EN：标题没翻成 Skill order')
+    if (!text.includes('Skill control')) failures.push('EN：标题没翻成 Skill control')
     if (!text.includes('Apply')) failures.push('EN：缺少 Apply 按钮')
     if (!text.includes('skills')) failures.push('EN：缺少数量文案（N skills）')
     for (const word of ['User skills (incl. custom directories)', 'Built-in', 'Provided by plugins', 'not sortable']) {
       if (!text.includes(word)) failures.push('EN：缺少分组文案 ' + word)
     }
-    const CHROME = ['技能排序', '应用', '刷新', '读取中', '改名字', '移到第 1 位', '知道了', '用户技能', '系统内置']
+    const CHROME = ['技能控制', '应用', '刷新', '读取中', '改名字', '移到第 1 位', '知道了', '用户技能', '系统内置']
     const hits = CHROME.filter((w) => text.includes(w))
     if (hits.length > 0) failures.push('EN：界面文案没翻干净：' + hits.join('、'))
   } else {
-    if (!text.includes('技能排序')) failures.push('中文：标题不对')
+    if (!text.includes('技能控制')) failures.push('中文：标题不对')
     if (!text.includes('应用')) failures.push('中文：缺少「应用」按钮')
     if (!text.includes('共 4 个')) failures.push('中文：缺少数量文案（共 N 个）')
     if (!text.includes('用户技能')) failures.push('中文：缺少「用户技能」分组')

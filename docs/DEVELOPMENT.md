@@ -27,7 +27,7 @@ dsh plugin --profile desktop add "E:\000Dev\TuoZiWorkbench\Yichajian\dsh-skill-o
 1. `~/.dsh/dsh-skill-order-ready.log` 有没有今天的行。没有 = `apply()` 没跑。
 2. `node_modules/dsh-skill-order` 是不是悬空链接（指向已删除的目录）。
 3. `<profile>/pnpm-lock.yaml` 里是不是还写着旧路径。
-4. 设置页里没有「技能排序」这一项，但 `ready.log` 有：客户端脚本要按 F5 重载窗口。
+4. 左栏里没有「技能控制」这一项，但 `ready.log` 有：客户端脚本要按 F5 重载窗口。
 
 ## 接口
 
