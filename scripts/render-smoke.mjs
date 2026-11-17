@@ -63,7 +63,7 @@ api.apply({
     register(spec, component) { page = component; return () => {} },
   },
 })
-if (!page) throw new Error('没有注册设置页')
+if (!page) throw new Error('没有注册左栏入口')
 
 const skillsWithFlags = skills.map((s) => Object.assign({}, s))
 const seq = [
@@ -76,9 +76,24 @@ const failures = []
 let tree
 try {
   tree = page({})
+  // 左栏入口注册的是外壳组件，把外壳里的页面组件展开一层再收集文字
+  tree = resolve(tree, 0);
 } catch (error) {
   failures.push('渲染抛错：' + error.message)
 }
+function resolve(node, depth) {
+  if (depth > 6 || node === null || node === undefined || typeof node !== 'object') return node
+  if (Array.isArray(node)) return node.map((child) => resolve(child, depth + 1))
+  if (typeof node.type === 'function') return resolve(node.type(node.props || {}), depth + 1)
+  if (node.children !== undefined) {
+    return Object.assign({}, node, { children: resolve(node.children, depth + 1) })
+  }
+  if (node.props && node.props.children !== undefined) {
+    return Object.assign({}, node, { props: Object.assign({}, node.props, { children: resolve(node.props.children, depth + 1) }) })
+  }
+  return node
+}
+
 function textsOf(node, out) {
   if (node === null || node === undefined || node === false) return out
   if (typeof node === 'string' || typeof node === 'number') { out.push(String(node)); return out }
@@ -94,6 +109,7 @@ function textsOf(node, out) {
   return out
 }
 textsOf(tree, collected)
+if (process.env.DEBUG_SMOKE) console.log(JSON.stringify(collected))
 const text = collected.join(' ')
 
 if (failures.length === 0) {

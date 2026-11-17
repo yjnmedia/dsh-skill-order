@@ -38,7 +38,7 @@ https://raw.githubusercontent.com/yjnmedia/dsh-skill-order/main/market-index.jso
 dsh plugin --profile <profile> add github:yjnmedia/dsh-skill-order
 ```
 
-装完打开 **设置 → 技能排序**。没有这一项，说明插件没加载，见 [排障](docs/DEVELOPMENT.md#插件没加载)。
+装完看**左栏**：菜单里会多一项 **技能排序**（紧挨着「技能中心」）。没有这一项，说明插件没加载，见 [排障](docs/DEVELOPMENT.md#插件没加载)。
 
 ## 为什么需要它
 
