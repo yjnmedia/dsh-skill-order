@@ -17,14 +17,18 @@ globalThis.window = {
   navigator: { language: EN ? 'en-US' : 'zh-CN' },
 }
 const skills = [
-  { id: '10-image-prompt', name: '10-image-prompt', description: '按五段式编写文生图正面词与负面词', source: 'local' },
-  { id: '01-readme-rewrite', name: '01-readme-rewrite', description: '把仓库首页按读者视角重排', source: 'bundle' },
+  { id: '10-image-prompt', name: '10-image-prompt', description: '按五段式编写文生图正面词与负面词', source: 'user' },
+  { id: '01-readme-rewrite', name: '01-readme-rewrite', description: '把仓库首页按读者视角重排', source: 'superpowers' },
+]
+const extras = [
+  { id: 'registry:expert-ai-image', name: 'expert-ai-image', description: 'AI 生图资料库', group: 'provider', provider: 'expert-role' },
+  { id: 'registry:builtin-one', name: 'builtin-one', description: '系统自带的一个技能', group: 'bundled', provider: 'filesystem' },
 ]
 globalThis.fetch = async (url) => {
   const p = String(url)
   const body = p.includes('/fresh')
     ? { ok: true, fresh: ['01-readme-rewrite'], settings: { autoPopup: true, autoPinNew: true } }
-    : { ok: true, skills }
+    : { ok: true, skills, extras }
   return { ok: true, status: 200, json: async () => body }
 }
 
@@ -62,7 +66,10 @@ api.apply({
 if (!page) throw new Error('没有注册设置页')
 
 const skillsWithFlags = skills.map((s) => Object.assign({}, s))
-const seq = [skillsWithFlags, false, false, '', '', null, '', '', '', [], EN ? 'en' : 'zh', { autoPopup: true, autoPinNew: true }]
+const seq = [
+  skillsWithFlags, false, false, '', '', null, '', '', '', [], EN ? 'en' : 'zh',
+  { autoPopup: true, autoPinNew: true }, extras, {},
+]
 drive = { seq, i: 0 }
 const collected = []
 const failures = []
@@ -94,13 +101,20 @@ if (failures.length === 0) {
     if (!text.includes('Skill order')) failures.push('EN：标题没翻成 Skill order')
     if (!text.includes('Apply')) failures.push('EN：缺少 Apply 按钮')
     if (!text.includes('skills')) failures.push('EN：缺少数量文案（N skills）')
-    const CHROME = ['技能排序', '应用', '刷新', '读取中', '共 ', '改名字', '移到第 1 位', '知道了']
+    for (const word of ['User skills', 'Custom directories', 'Built-in', 'Provided by plugins', 'not sortable']) {
+      if (!text.includes(word)) failures.push('EN：缺少分组文案 ' + word)
+    }
+    const CHROME = ['技能排序', '应用', '刷新', '读取中', '改名字', '移到第 1 位', '知道了', '用户技能', '自定义目录', '系统内置']
     const hits = CHROME.filter((w) => text.includes(w))
     if (hits.length > 0) failures.push('EN：界面文案没翻干净：' + hits.join('、'))
   } else {
     if (!text.includes('技能排序')) failures.push('中文：标题不对')
     if (!text.includes('应用')) failures.push('中文：缺少「应用」按钮')
-    if (!text.includes('共 2 个')) failures.push('中文：缺少数量文案（共 N 个）')
+    if (!text.includes('共 4 个')) failures.push('中文：缺少数量文案（共 N 个）')
+    if (!text.includes('用户技能')) failures.push('中文：缺少「用户技能」分组')
+    if (!text.includes('自定义目录')) failures.push('中文：缺少「自定义目录」分组')
+    if (!text.includes('系统内置')) failures.push('中文：缺少「系统内置」分组')
+    if (!text.includes('由插件提供')) failures.push('中文：缺少「由插件提供」分组')
   }
   const src = fs.readFileSync(clientPath, 'utf8')
   if (!src.includes('dsh-skill-order-lang')) failures.push('语言选择没有落到 localStorage')

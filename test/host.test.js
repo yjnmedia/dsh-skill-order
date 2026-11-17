@@ -20,7 +20,7 @@ function mockRes() {
   }
 }
 
-test('apply 只向 webServer 注册 list / stamp / apply 三条路由', () => {
+test('apply 只向 webServer 注册 list / stamp / apply 三条路由', async () => {
   const registered = []
   const ctx = {
     webServer: {
@@ -38,7 +38,7 @@ test('apply 只向 webServer 注册 list / stamp / apply 三条路由', () => {
   apply(ctx, { adoptAtStart: false })
 
   assert.equal(name, 'dsh-skill-order')
-  assert.deepEqual(inject, ['webServer', 'llm'])
+  assert.deepEqual(inject, ['webServer', 'llm', 'skills'])
   assert.equal(registered.length, 7)
   assert.equal(registered[0].kind, 'exact')
   assert.equal(registered[0].path, '/api/dsh-skill-order/list')
@@ -50,13 +50,22 @@ test('apply 只向 webServer 注册 list / stamp / apply 三条路由', () => {
   assert.equal(registered[6].path, '/api/dsh-skill-order/rename')
 
   const res = mockRes()
-  registered[0].handler({ method: 'GET', socket: { remoteAddress: '127.0.0.1' } }, res)
+  await registered[0].handler({ method: 'GET', socket: { remoteAddress: '127.0.0.1' } }, res)
   assert.equal(res.status, 200)
   const data = JSON.parse(Buffer.from(res.body).toString('utf8'))
   assert.equal(data.ok, true)
   assert.ok(data.count >= 40, '技能总数异常：' + data.count)
   assert.equal(data.skills.length, data.count)
   assert.match(String(data.stamp), /^[0-9a-f]{16}$/, 'list 必须带 16 位指纹')
+  assert.ok(Array.isArray(data.extras), 'list 要带回插件/内置等其他来源的技能')
+  assert.ok(Array.isArray(data.groups), 'list 要带回分组元数据')
+  for (const group of data.groups) {
+    assert.ok(['user', 'custom', 'bundled', 'provider'].includes(group.id), '分组 id 不认识：' + group.id)
+  }
+  const userGroup = data.groups.find((g) => g.id === 'user')
+  assert.ok(userGroup && userGroup.sortable === true, '用户技能组必须可排序')
+  const sortableTotal = data.groups.filter((g) => g.sortable).reduce((sum, g) => sum + g.count, 0)
+  assert.equal(sortableTotal, data.count, '可排序总数应等于磁盘技能数')
 
   const stampRes = mockRes()
   registered[1].handler({ method: 'GET', socket: { remoteAddress: '127.0.0.1' } }, stampRes)
