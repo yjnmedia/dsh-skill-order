@@ -95,6 +95,30 @@ test('两目录互换时先走临时名，目录与 name 同步，失败回滚',
   }
 })
 
+test('两个磁盘根合并成一张清单：编号按全局位次跨目录连续', () => {
+  const root = mkdtempSync(join(tmpdir(), 'dso-merge-'))
+  const user = join(root, 'user')
+  const custom = join(root, 'custom')
+  try {
+    writeSkill(join(user, '01-alpha'), '01-alpha', '甲')
+    writeSkill(join(user, '02-beta'), '02-beta', '乙')
+    writeSkill(join(custom, '03-gamma'), '03-gamma', '丙')
+    const skills = listSkills([
+      { source: 'user', dir: user },
+      { source: 'superpowers', dir: custom },
+    ])
+    // 把自定义目录里的那条拖到最前：它应当拿到 01，其余顺延，两个目录各自重新编号
+    const ordered = ['superpowers:03-gamma', 'user:01-alpha', 'user:02-beta']
+    const result = applyOrder(skills, ordered)
+    assert.equal(result.ok, true)
+    assert.deepEqual(readdirSync(user).sort(), ['02-alpha', '03-beta'])
+    assert.deepEqual(readdirSync(custom).sort(), ['01-gamma'])
+    assert.match(readFileSync(join(custom, '01-gamma', 'SKILL.md'), 'utf8'), /^name: 01-gamma$/m)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
 test('应用中途失败时回滚到原目录和原文', () => {
   const root = mkdtempSync(join(tmpdir(), 'dso-rb-'))
   const user = join(root, 'user')

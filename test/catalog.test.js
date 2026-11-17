@@ -4,15 +4,16 @@ import { extrasOf, groupOfLocalSource, groupOfRegistrySource, groupSummary } fro
 
 test('磁盘来源映射到分组', () => {
   assert.equal(groupOfLocalSource('user'), 'user')
-  assert.equal(groupOfLocalSource('superpowers'), 'custom')
+  // 两个磁盘根合并成一张可排序清单（编号按全局位次）
+  assert.equal(groupOfLocalSource('superpowers'), 'user')
   assert.equal(groupOfLocalSource(undefined), 'user')
 })
 
 test('注册表来源映射到分组', () => {
   assert.equal(groupOfRegistrySource('user-dsh'), 'user')
   assert.equal(groupOfRegistrySource('user-agents'), 'user')
-  assert.equal(groupOfRegistrySource('custom'), 'custom')
-  assert.equal(groupOfRegistrySource('project-dsh'), 'custom')
+  assert.equal(groupOfRegistrySource('custom'), 'user')
+  assert.equal(groupOfRegistrySource('project-dsh'), 'user')
   assert.equal(groupOfRegistrySource('bundled'), 'bundled')
   assert.equal(groupOfRegistrySource('expert-library'), 'provider')
   assert.equal(groupOfRegistrySource(undefined), 'provider')
@@ -36,7 +37,7 @@ test('extras 只留磁盘扫不到的，并且不能排序', () => {
   const byName = new Map(extras.map((item) => [item.name, item]))
   assert.equal(byName.get('expert-ai-image').group, 'provider')
   assert.equal(byName.get('bundled-skill').group, 'bundled')
-  assert.equal(byName.get('zip-skill').group, 'custom')
+  assert.equal(byName.get('zip-skill').group, 'user')
 })
 
 test('注册表重复项只算一次，空输入不炸', () => {
@@ -58,12 +59,13 @@ test('分组摘要按固定顺序给计数，空组不出现', () => {
   const extras = [
     { group: 'provider' },
     { group: 'bundled' },
+    { group: 'bundled' },
     { group: 'provider' },
   ]
   const groups = groupSummary(local, extras)
-  assert.deepEqual(groups.map((g) => g.id), ['user', 'custom', 'bundled', 'provider'])
-  assert.deepEqual(groups.map((g) => g.count), [2, 1, 1, 2])
+  assert.deepEqual(groups.map((g) => g.id), ['user', 'bundled', 'provider'])
+  assert.deepEqual(groups.map((g) => g.count), [3, 2, 2])
   assert.equal(groups[0].sortable, true)
-  assert.equal(groups[3].sortable, false)
+  assert.equal(groups[2].sortable, false)
   assert.deepEqual(groupSummary([], []), [])
 })
