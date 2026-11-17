@@ -18,6 +18,10 @@
 <p align="center">
   <img src="assets/hero.png" alt="技能控制面板" width="520">
 </p>
+<p align="center">
+  <img src="assets/demo.gif" alt="拖动排序后点应用，编号跟着重排" width="520">
+</p>
+<p align="center"><sub>拖动排序 → 点「应用」：目录名与编号一起改，斜杠菜单当场跟过来。</sub></p>
 
 <p align="center">
   <a href="https://github.com/yjnmedia/dsh-skill-order/releases"><img alt="version" src="https://img.shields.io/github/package-json/v/yjnmedia/dsh-skill-order?label=version&color=4D6BFE"></a>
