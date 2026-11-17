@@ -1,5 +1,7 @@
 <h1 align="center">dsh-skill-order</h1>
 
+<p align="center">Also called "Skill Keeper" — one plugin, two names.</p>
+
 <p align="center"><a href="README.md">中文</a></p>
 
 <p align="center">
@@ -55,7 +57,7 @@ With many skills this falls apart: names that do not follow the convention never
 
 **Sync** — after applying, the host is told to drop the skill cache and broadcast; the `/` menu updates immediately, including changes made by other tools. When the plugin itself updates, one Refresh installs it.
 
-**Not in scope** — enable, delete, create or import. Ordering, renaming and tidying only.
+**Not in scope** — enable, delete or create. Ordering, renaming, tidying and importing only.
 
 ## Requirements
 
