@@ -15,9 +15,6 @@
   <b>The skill keeper for DSH: order, rename, tidy up — applied instantly.</b>
 </p>
 
-<p align="center">
-  <img src="assets/hero.png" alt="Skill order panel" width="520">
-</p>
 
 <p align="center">
   <a href="https://github.com/yjnmedia/dsh-skill-order/releases"><img alt="version" src="https://img.shields.io/github/package-json/v/yjnmedia/dsh-skill-order?label=version&color=4D6BFE"></a>
