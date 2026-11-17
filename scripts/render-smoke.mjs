@@ -50,6 +50,15 @@ const React = {
   useCallback(fn) { return fn },
   useMemo(fn) { return fn() },
 }
+let DUMP_CSS = ''
+if (process.env.DUMP_HTML) {
+  const src = fs.readFileSync(new URL('../lib/client.js', import.meta.url), 'utf8')
+  const start = src.indexOf('var CSS = [')
+  const end = src.indexOf('].join(', start)
+  const body = src.slice(start + 'var CSS = ['.length, end)
+  DUMP_CSS = body.split('\n').map((line) => line.trim().replace(/,$/, '')).filter(Boolean)
+    .map((line) => { try { return eval(line) } catch { return '' } }).join('')
+}
 const api = definition.factory((name) => {
   if (name !== 'react') throw new Error('未知 require：' + name)
   return React
@@ -108,6 +117,34 @@ function textsOf(node, out) {
   }
   return out
 }
+if (process.env.DUMP_HTML) {
+  const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const styleAttr = (st) => st && typeof st === 'object'
+    ? Object.keys(st).map((k) => k.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase()) + ':' + st[k]).join(';')
+    : ''
+  function html(node) {
+    if (node === null || node === undefined || node === false) return ''
+    if (typeof node === 'string' || typeof node === 'number') return esc(node)
+    if (Array.isArray(node)) return node.map(html).join('')
+    const t = node.type
+    const props = node.props || {}
+    if (typeof t === 'function') return html(t(props))
+    if (t === undefined) return html(node.children || '')
+    if (t === 'input') return '<input type="' + (props.type || 'text') + '"' + (props.checked ? ' checked' : '') + '>'
+    const children = node.children !== undefined ? node.children : props.children
+    let attrs = ''
+    if (typeof t === 'string') {
+      if (props.className) attrs += ' class="' + esc(props.className) + '"'
+      const st = styleAttr(props.style)
+      if (st) attrs += ' style="' + esc(st) + '"'
+    }
+    return '<' + t + attrs + '>' + html(children) + '</' + t + '>'
+  }
+  const out = '<!doctype html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box}body{margin:0;padding:20px 24px;font-family:"Microsoft YaHei","Segoe UI",system-ui,sans-serif;background:#fff}' + DUMP_CSS + '</style></head><body>' + html(tree) + '</body></html>'
+  fs.writeFileSync(process.env.DUMP_HTML, out, 'utf8')
+  console.log('已导出 ' + process.env.DUMP_HTML)
+}
+
 textsOf(tree, collected)
 if (process.env.DEBUG_SMOKE) console.log(JSON.stringify(collected))
 const text = collected.join(' ')
