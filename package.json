@@ -1,6 +1,6 @@
 {
   "name": "dsh-skill-order",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "DSH 技能控制（别名技能管家）：分组排序、行内改名、导入本机目录或 zip，改完斜杠菜单立刻生效。",
   "type": "module",
   "license": "MIT",
@@ -31,7 +31,8 @@
     "smoke": "node scripts/render-smoke.mjs && SMOKE_EN=1 node scripts/render-smoke.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "dsh": ">=0.2.0"
   },
   "dsh": {
     "bundle": {
@@ -42,6 +43,9 @@
         "@deepseek-ai/dsh-client-ui-slots"
       ],
       "platform": "web"
+    },
+    "engines": {
+      "dsh": ">=0.2.0"
     }
   },
   "keywords": [
